@@ -1,0 +1,10 @@
+[
+  "early_attendance_pct",
+  "late_attendance_pct",
+  "trend_slope",
+  "consecutive_absences_max",
+  "override_ratio",
+  "face_method_ratio",
+  "morning_session_ratio",
+  "total_sessions"
+]
