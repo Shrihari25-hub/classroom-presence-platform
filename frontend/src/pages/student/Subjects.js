@@ -51,16 +51,27 @@ function QRScannerSection({ sessionId, onSuccess, onError, onCancel }) {
 
   useEffect(() => {
     let active = true;
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-      .then(stream => {
+    // Prefer back camera on mobile; fall back to any available camera
+    const startCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
         if (!active) { stream.getTracks().forEach(t => t.stop()); return; }
         streamRef.current = stream;
         if (videoRef.current) videoRef.current.srcObject = stream;
         setStatusMsg('Point camera at the QR code…');
-      })
-      .catch(() => {
-        setCameraError('Camera access denied. Enable camera permission or use manual entry below.');
-      });
+      } catch {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          if (!active) { stream.getTracks().forEach(t => t.stop()); return; }
+          streamRef.current = stream;
+          if (videoRef.current) videoRef.current.srcObject = stream;
+          setStatusMsg('Point camera at the QR code…');
+        } catch {
+          setCameraError('Camera access denied. Enable camera permission or use manual entry below.');
+        }
+      }
+    };
+    startCamera();
     return () => {
       active = false;
       if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
@@ -192,6 +203,7 @@ export default function StudentSubjects() {
   const [scanning, setScanning] = useState(false);
   const [qrToken, setQrToken] = useState('');
   const [modelsLoaded, setModelsLoaded] = useState(false);
+  const [facingMode, setFacingMode] = useState('environment');
   const webcamRef = useRef(null);
   const autoJoinRan = useRef(false); // prevent double-firing in StrictMode
 
@@ -404,17 +416,27 @@ export default function StudentSubjects() {
                     <Webcam
                       ref={webcamRef}
                       screenshotFormat="image/jpeg"
+                      videoConstraints={{ facingMode }}
                       style={{ width: '100%', maxWidth: 420, aspectRatio: '4 / 3', height: 'auto', borderRadius: 12, display: 'block', margin: '0 auto' }}
                     />
                   </div>
-                  <button
-                    className="btn btn-primary"
-                    style={{ width: '100%', justifyContent: 'center' }}
-                    onClick={handleFaceScan}
-                    disabled={scanning || !modelsLoaded}
-                  >
-                    {scanning ? 'Scanning...' : modelsLoaded ? '📸 Scan Face' : 'Loading models...'}
-                  </button>
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+                    <button
+                      className="btn btn-primary"
+                      style={{ flex: 1, justifyContent: 'center' }}
+                      onClick={handleFaceScan}
+                      disabled={scanning || !modelsLoaded}
+                    >
+                      {scanning ? 'Scanning...' : modelsLoaded ? '📸 Scan Face' : 'Loading models...'}
+                    </button>
+                    <button
+                      className="btn btn-outline"
+                      onClick={() => setFacingMode(prev => prev === 'user' ? 'environment' : 'user')}
+                      title="Switch camera"
+                    >
+                      🔄
+                    </button>
+                  </div>
                   {!modelsLoaded && (
                     <p style={{ fontSize: 12, color: '#888', textAlign: 'center', marginTop: 8 }}>
                       Face recognition models loading... Ensure /public/models has face-api.js model files.

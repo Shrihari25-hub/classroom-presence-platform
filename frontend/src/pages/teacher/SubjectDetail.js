@@ -53,6 +53,7 @@ export default function SubjectDetail() {
   const [scanResult, setScanResult] = useState(null);
   const [scanning, setScanning] = useState(false);
   const [continuousScan, setContinuousScan] = useState(false);
+  const [facingMode, setFacingMode] = useState('environment');
   const webcamRef = useRef(null);
   const scanIntervalRef = useRef(null);
 
@@ -287,7 +288,7 @@ export default function SubjectDetail() {
                             ref={webcamRef}
                             screenshotFormat="image/jpeg"
                             style={{ width: '100%', maxWidth: 420, aspectRatio: '4 / 3', height: 'auto', borderRadius: 12, display: 'block' }}
-                            videoConstraints={{ facingMode: 'user' }}
+                            videoConstraints={{ facingMode }}
                           />
                           {continuousScan && (
                             <div style={{
@@ -309,6 +310,14 @@ export default function SubjectDetail() {
                             disabled={scanning}
                           >
                             {continuousScan ? '⏹ Stop Auto-Scan' : '▶ Auto-Scan'}
+                          </button>
+                          <button
+                            className="btn btn-outline"
+                            onClick={() => setFacingMode(prev => prev === 'user' ? 'environment' : 'user')}
+                            title="Switch camera"
+                            disabled={continuousScan}
+                          >
+                            🔄
                           </button>
                         </div>
                         <p style={{ fontSize: 12, color: '#888', marginTop: 8, maxWidth: 420 }}>

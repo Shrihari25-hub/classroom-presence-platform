@@ -14,6 +14,7 @@ export default function FaceRegistration() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [registered, setRegistered] = useState(user?.faceRegistered);
+  const [facingMode, setFacingMode] = useState('environment');
 
   useEffect(() => {
     const loadModels = async () => {
@@ -118,6 +119,7 @@ export default function FaceRegistration() {
                 <Webcam
                   ref={webcamRef}
                   screenshotFormat="image/jpeg"
+                  videoConstraints={{ facingMode }}
                   style={{ width: '100%', maxWidth: 440, aspectRatio: '4 / 3', height: 'auto', borderRadius: 12, display: 'block', margin: '0 auto' }}
                 />
                 {/* Face guide overlay */}
@@ -137,6 +139,13 @@ export default function FaceRegistration() {
                   disabled={capturing || !modelsLoaded || captures.length >= 3}
                 >
                   {capturing ? '📸 Scanning...' : `📷 Capture ${captures.length + 1}/3`}
+                </button>
+                <button
+                  className="btn btn-outline"
+                  onClick={() => setFacingMode(prev => prev === 'user' ? 'environment' : 'user')}
+                  title="Switch camera"
+                >
+                  🔄
                 </button>
                 {captures.length > 0 && (
                   <button className="btn btn-outline" onClick={() => setCaptures([])}>Reset</button>
