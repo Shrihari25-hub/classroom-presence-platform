@@ -198,7 +198,8 @@ export default function SessionPage() {
   const markedStudentIds = new Set(attendance.map(r => r.student?._id));
   const unmarkedStudents = allStudents.filter(s => !markedStudentIds.has(s._id));
 
-  const presentCount = attendance.filter(r => r.status === 'present').length;
+  // Late counts as present; not-marked only relevant during active sessions
+  const presentCount = attendance.filter(r => r.status === 'present' || r.status === 'late').length;
   const absentCount  = attendance.filter(r => r.status === 'absent').length;
   const lateCount    = attendance.filter(r => r.status === 'late').length;
   const faceCount    = attendance.filter(r => r.method === 'face').length;
@@ -245,7 +246,7 @@ export default function SessionPage() {
         <div className="stats-grid">
           <div className="stat-card">
             <div className="stat-num" style={{ color: '#16a34a' }}>{presentCount}</div>
-            <div className="stat-label">Present</div>
+            <div className="stat-label">Present{lateCount > 0 ? ` (incl. ${lateCount} late)` : ''}</div>
           </div>
           <div className="stat-card">
             <div className="stat-num" style={{ color: '#ef4444' }}>{absentCount}</div>
@@ -255,10 +256,12 @@ export default function SessionPage() {
             <div className="stat-num" style={{ color: '#f59e0b' }}>{lateCount}</div>
             <div className="stat-label">Late</div>
           </div>
-          <div className="stat-card">
-            <div className="stat-num" style={{ color: '#94a3b8' }}>{unmarkedStudents.length}</div>
-            <div className="stat-label">Not marked</div>
-          </div>
+          {session?.status === 'active' && (
+            <div className="stat-card">
+              <div className="stat-num" style={{ color: '#94a3b8' }}>{unmarkedStudents.length}</div>
+              <div className="stat-label">Not marked</div>
+            </div>
+          )}
           <div className="stat-card">
             <div className="stat-num">{faceCount}</div>
             <div className="stat-label">Via Face</div>

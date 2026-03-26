@@ -146,7 +146,7 @@ def _build_risk_and_reasons(all_logs, schedule, session_counts=None):
     # Use actual session count as denominator — absent students have no log records,
     # so len(all_logs) would give 100% for a student who only attended 3 of 5 sessions.
     total_sessions_actual = (session_counts or {}).get(subject_id, len(all_logs))
-    present_count = sum(1 for l in all_logs if l.get("status") == "present")
+    present_count = sum(1 for l in all_logs if l.get("status") in ("present", "late"))
     attendance_pct = 0.0 if total_sessions_actual == 0 else (present_count / total_sessions_actual) * 100.0
     total_sessions = total_sessions_actual
 
@@ -172,7 +172,7 @@ def _build_risk_and_reasons(all_logs, schedule, session_counts=None):
         if day_key not in by_day:
             by_day[day_key] = {"total": 0, "present": 0}
         by_day[day_key]["total"] += 1
-        if l.get("status") == "present":
+        if l.get("status") in ("present", "late"):
             by_day[day_key]["present"] += 1
 
     sorted_days = sorted(by_day.keys())
@@ -188,7 +188,7 @@ def _build_risk_and_reasons(all_logs, schedule, session_counts=None):
 
     # Recent attendance rate (last 7 days)
     recent_total = len(recent_logs)
-    recent_present = sum(1 for l in recent_logs if l.get("status") == "present")
+    recent_present = sum(1 for l in recent_logs if l.get("status") in ("present", "late"))
     recent_pct = 0.0 if recent_total == 0 else (recent_present / recent_total) * 100.0
 
     # Trend classification — default Stable when fewer than 2 days of recent data
@@ -247,17 +247,17 @@ def _build_risk_and_reasons(all_logs, schedule, session_counts=None):
     early_logs = sorted_logs_by_time[:half]
     late_logs  = sorted_logs_by_time[half:]
 
-    early_present_ml = sum(1 for l in early_logs if l.get("status") == "present")
+    early_present_ml = sum(1 for l in early_logs if l.get("status") in ("present", "late"))
     early_attendance_pct = (early_present_ml / len(early_logs)) * 100.0 if early_logs else 0.0
 
-    late_present_ml = sum(1 for l in late_logs if l.get("status") == "present")
+    late_present_ml = sum(1 for l in late_logs if l.get("status") in ("present", "late"))
     late_attendance_pct = (late_present_ml / len(late_logs)) * 100.0 if late_logs else 0.0
 
-    # Longest consecutive absence streak
+    # Longest consecutive absence streak — late counts as present, not absent
     max_streak = 0
     current_streak = 0
     for l in sorted_logs_by_time:
-        if l.get("status") != "present":
+        if l.get("status") not in ("present", "late"):
             current_streak += 1
             max_streak = max(max_streak, current_streak)
         else:
@@ -435,7 +435,7 @@ def _analyze_timetable_slot_suitability(logs, schedule):
         slot_key = f"{best_slot.get('dayOfWeek')}-{best_slot.get('startTime')}"
         m = slot_metrics[subject][slot_key]
         m["total"] += 1
-        if l.get("status") == "present":
+        if l.get("status") in ("present", "late"):
             m["present"] += 1
         if best_delay is not None:
             m["delays"].append(best_delay)

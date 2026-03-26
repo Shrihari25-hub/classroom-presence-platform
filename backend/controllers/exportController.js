@@ -5,6 +5,7 @@ const Session = require('../models/Session');
 const Subject = require('../models/Subject');
 const SubjectEnrollment = require('../models/SubjectEnrollment');
 const User = require('../models/User');
+const { calculateAttendanceStats } = require('../utils/attendanceUtils');
 
 // ─── Export student list per course ──────────────────────────────────────────
 exports.exportStudentList = async (req, res) => {
@@ -113,23 +114,26 @@ exports.exportAttendance = async (req, res) => {
         Email: e.student.email
       };
 
-      let totalPresent = 0;
+      // Collect this student's records across all sessions for stats
+      const studentRecords = [];
 
       sessions.forEach((session, idx) => {
         const sessId = session._id.toString();
-        const status = attendanceMap[studentId]?.[sessId] || 'Absent';
-        row[sessionLabels[idx]] = status;
-        if (status.toLowerCase() === 'present') totalPresent++;
+        const rawStatus = attendanceMap[studentId]?.[sessId];
+        // Display value in the cell
+        const cellDisplay = rawStatus || 'Absent';
+        row[sessionLabels[idx]] = cellDisplay;
+        // Push a synthetic record so calculateAttendanceStats can work on it
+        studentRecords.push({ status: rawStatus ? rawStatus.toLowerCase() : 'absent' });
       });
 
-      const totalSessions = sessions.length;
-      const attendancePct = totalSessions > 0
-        ? parseFloat(((totalPresent / totalSessions) * 100).toFixed(1))
-        : 0;
+      const stats = calculateAttendanceStats(studentRecords);
 
-      row['Total Present'] = totalPresent;
-      row['Total Sessions'] = totalSessions;
-      row['Attendance %'] = `${attendancePct}%`;
+      row['Total Present'] = stats.present;   // includes late
+      row['Late']          = stats.late;
+      row['Total Absent']  = stats.absent;
+      row['Total Sessions'] = stats.total;
+      row['Attendance %']  = `${stats.percentage}%`;
 
       return row;
     });
@@ -147,13 +151,18 @@ exports.exportAttendance = async (req, res) => {
     XLSX.utils.book_append_sheet(wb, ws, 'Attendance');
 
     // Add a summary sheet
+    const allStats = calculateAttendanceStats(allAttendance);
     const summaryData = [
-      { Field: 'Subject', Value: subject.subjectName },
-      { Field: 'Subject Code', Value: subject.subjectCode || '—' },
-      { Field: 'Course', Value: subject.course?.courseName || '—' },
-      { Field: 'Total Sessions', Value: sessions.length },
-      { Field: 'Total Students', Value: enrollments.length },
-      { Field: 'Export Date', Value: new Date().toLocaleDateString() }
+      { Field: 'Subject',          Value: subject.subjectName },
+      { Field: 'Subject Code',     Value: subject.subjectCode || '—' },
+      { Field: 'Course',           Value: subject.course?.courseName || '—' },
+      { Field: 'Total Sessions',   Value: sessions.length },
+      { Field: 'Total Students',   Value: enrollments.length },
+      { Field: 'Overall Present',  Value: allStats.present },
+      { Field: 'Overall Late',     Value: allStats.late },
+      { Field: 'Overall Absent',   Value: allStats.absent },
+      { Field: 'Overall Attendance %', Value: `${allStats.percentage}%` },
+      { Field: 'Export Date',      Value: new Date().toLocaleDateString() }
     ];
     const wsSummary = XLSX.utils.json_to_sheet(summaryData);
     XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
