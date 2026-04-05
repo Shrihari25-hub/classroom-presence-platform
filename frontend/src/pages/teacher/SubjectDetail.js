@@ -321,7 +321,7 @@ export default function SubjectDetail() {
                           </button>
                         </div>
                         <p style={{ fontSize: 12, color: '#888', marginTop: 8, maxWidth: 420 }}>
-                          Auto-scan detects faces every 2.5 s. Already-marked students are skipped.
+                          Auto-scan detects faces every 2.5 s.
                         </p>
                       </div>
 
@@ -441,9 +441,7 @@ export default function SubjectDetail() {
                       <div style={{ background: '#fff', border: '3px solid #4facfe', borderRadius: 16, padding: 20, display: 'inline-block' }}>
                         <QRCodeSVG value={activeSession.qrCode} size={220} />
                       </div>
-                      <p style={{ fontSize: 13, color: '#555', marginTop: 10, maxWidth: 260 }}>
-                        Show this to students. They open the app → My Subjects → Mark Attendance → Scan QR.
-                      </p>
+                      
                     </div>
                     <div style={{ flex: 1, minWidth: 220 }}>
                       <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10 }}>
@@ -540,9 +538,9 @@ export default function SubjectDetail() {
                 <button className="btn btn-primary" onClick={handleStartSession}>▶ Start Session</button>
               </div>
               <div style={{ marginTop: 10, fontSize: 13, color: '#888' }}>
-                <strong>Face:</strong> Camera auto-detects and marks students. &nbsp;
+                {/* <strong>Face:</strong> Camera auto-detects and marks students. &nbsp;
                 <strong>QR:</strong> Students scan QR with their phone. &nbsp;
-                <strong>Manual:</strong> Mark by hand.
+                <strong>Manual:</strong> Mark by hand. */}
               </div>
             </div>
           )}

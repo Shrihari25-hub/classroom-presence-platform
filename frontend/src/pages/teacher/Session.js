@@ -283,7 +283,7 @@ export default function SessionPage() {
               Attendance Records
               {canEdit && (
                 <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-3)', marginLeft: 8 }}>
-                  — click ✏️ to edit
+                  
                 </span>
               )}
             </span>

@@ -51,7 +51,7 @@ export default function StudentCourses() {
             <input
               value={courseId}
               onChange={e => setCourseId(e.target.value)}
-              placeholder="Enter Course ID (e.g. CS101-2024)"
+              placeholder="Enter Course ID"
               style={{ flex: 1, padding: '9px 14px', border: '1px solid #ddd', borderRadius: 8, fontSize: 14 }}
               required
             />

@@ -170,12 +170,12 @@ export default function FaceRegistration() {
                 </div>
               )}
 
-              <div style={{ marginTop: 20, padding: 12, background: '#f8f9fa', borderRadius: 8, fontSize: 13, color: '#555' }}>
+              {/* <div style={{ marginTop: 20, padding: 12, background: '#f8f9fa', borderRadius: 8, fontSize: 13, color: '#555' }}>
                 <strong>ℹ️ Setup note:</strong> Download face-api.js models from
                 <a href="https://github.com/justadudewhohacks/face-api.js/tree/master/weights" target="_blank" rel="noopener noreferrer" style={{ color: '#4facfe' }}>
                   {' '}github.com/justadudewhohacks/face-api.js
                 </a> and place them in <code>public/models/</code>
-              </div>
+              </div> */}
             </div>
           )}
         </div>
